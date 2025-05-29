@@ -36,3 +36,11 @@ next-env.d.ts
 infra/aad_setup.sh
 .vscode
 infra/main.parameters.example.json
+
+# Exclude all files under .scratchpad but leave the folder itself
+.[Ss]cratch[Pp]ad/*
+!.[Ss]cratch[Pp]ad/.gitkeep
+
+# Exclude all files under .scratchpad but leave the folder itself
+_[Ss]cratch[Pp]ad/*
+!_[Ss]cratch[Pp]ad/.gitkeep
