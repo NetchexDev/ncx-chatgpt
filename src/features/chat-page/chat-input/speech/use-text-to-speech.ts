@@ -7,7 +7,7 @@ import {
   SpeechSynthesizer,
 } from "microsoft-cognitiveservices-speech-sdk";
 import { proxy, useSnapshot } from "valtio";
-import { GetSpeechToken } from "./speech-service";
+import { GetSpeechToken, GetSpeechVoice } from "./speech-service";
 import { speechToTextStore } from "./use-speech-to-text";
 
 let player: SpeakerAudioDestination | undefined = undefined;
@@ -38,6 +38,14 @@ class TextToSpeech {
       tokenObj.token,
       tokenObj.region
     );
+
+    const voiceObj = await GetSpeechVoice();
+    if (voiceObj.error) {
+      showError(voiceObj.errorMessage);
+      return;
+    }
+
+    speechConfig.speechSynthesisVoiceName = voiceObj.voice;
 
     player = new SpeakerAudioDestination();
 

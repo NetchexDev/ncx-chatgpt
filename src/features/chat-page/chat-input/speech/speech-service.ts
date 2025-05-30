@@ -1,5 +1,22 @@
 "use server";
 
+export const GetSpeechVoice = async () => {
+  if (
+    process.env.AZURE_SPEECH_VOICE_NAME === undefined
+  ) {
+    return {
+      error: true,
+      errorMessage: "Missing Azure Speech voice configuration",
+      voice: ""
+    };
+  }
+  return {
+    error: false,
+    errorMessage: "",
+    voice: process.env.AZURE_SPEECH_VOICE_NAME
+  };
+};
+
 export const GetSpeechToken = async () => {
   if (
     process.env.AZURE_SPEECH_REGION === undefined ||

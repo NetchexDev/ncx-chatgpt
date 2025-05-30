@@ -23,6 +23,7 @@ const azureEnvVars = [
   "ADMIN_EMAIL_ADDRESS",
   "AZURE_SPEECH_REGION",
   "AZURE_SPEECH_KEY",
+  "AZURE_SPEECH_VOICE_NAME",
   "AZURE_KEY_VAULT_NAME",
 ] as const;
 
