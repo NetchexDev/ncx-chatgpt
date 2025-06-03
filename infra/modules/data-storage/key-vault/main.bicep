@@ -45,6 +45,3 @@ output core Outputs = {
   id: keyVault.id
   uri: keyVault.properties.vaultUri
 }
-
-@sys.description('The Key Vault resource.')
-output res resource = keyVault

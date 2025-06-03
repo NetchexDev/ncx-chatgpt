@@ -1,6 +1,6 @@
 import { CoreConfiguration } from '../../types.bicep'
 import { Sku, Props, Outputs } from './types.bicep'
-import { DefaultConfiguration } from './constants.bicep'
+import { DefaultConfiguration, acrPullRoleDefinitionId as AcrPull } from './constants.bicep'
 
 targetScope = 'resourceGroup'
 
@@ -16,7 +16,6 @@ param props Props = {}
 resource containerRegistry 'Microsoft.ContainerRegistry/registries@2025-04-01' = {
   name: core.name
   location: core.location
-  identity: { type: 'SystemAssigned' }
   tags: core.?tags
 
   sku: sku
@@ -24,12 +23,24 @@ resource containerRegistry 'Microsoft.ContainerRegistry/registries@2025-04-01' =
   properties: union(DefaultConfiguration, props)
 }
 
-@sys.secure()
+resource acrPullManagedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2024-11-30' = {
+  name: '${core.name}-acr-pull'
+  location: core.location
+  tags: core.?tags
+}
+
+resource acrPullRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(containerRegistry.id, 'acrpull', acrPullManagedIdentity.id)
+  scope: containerRegistry
+  properties: {
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', AcrPull)
+    principalId: acrPullManagedIdentity.properties.principalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
 output core Outputs = {
   id: containerRegistry.id
   loginServer: containerRegistry.properties.loginServer
   identity: containerRegistry.identity.principalId
 }
-
-@sys.description('The Container Registry resource.')
-output res resource = containerRegistry

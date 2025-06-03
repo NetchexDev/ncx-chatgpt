@@ -18,3 +18,6 @@ var DefaultConfiguration = {
 var DefaultSku = {
   name: 'Basic'
 }
+
+@sys.export()
+var acrPullRoleDefinitionId string = '7f951dda-4ed3-4680-a7ca-43fe172d538d'

@@ -1,5 +1,5 @@
 import { CoreConfiguration } from '../../types.bicep'
-import { Props, Outputs } from './types.bicep'
+import { Props } from './types.bicep'
 import { DefaultProps } from './constants.bicep'
 
 targetScope = 'resourceGroup'
@@ -53,16 +53,12 @@ resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2025-05-01-previ
   }
 }
 
-@sys.secure()
-output core Outputs = {
-  id: cosmosDbAccount.id
-  keys: [
-    cosmosDbAccount.listKeys().primaryMasterKey
-    cosmosDbAccount.listKeys().secondaryMasterKey
-  ]
-  endpoint: cosmosDbAccount.properties.documentEndpoint
-  connectionString: 'AccountEndpoint=${cosmosDbAccount.properties.documentEndpoint};AccountKey=${cosmosDbAccount.listKeys().primaryMasterKey};'
-}
+output id string = cosmosDbAccount.id
 
-@sys.description('The Cosmos DB Account resource.')
-output res resource = cosmosDbAccount
+output endpoint string = cosmosDbAccount.properties.documentEndpoint
+
+@secure()
+output key string = cosmosDbAccount.listKeys().primaryMasterKey
+
+@secure()
+output connectionString string = 'AccountEndpoint=${cosmosDbAccount.properties.documentEndpoint};AccountKey=${cosmosDbAccount.listKeys().primaryMasterKey};'

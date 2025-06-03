@@ -1,5 +1,5 @@
 import { CoreConfiguration } from '../../types.bicep'
-import { Props, Outputs } from './types.bicep'
+import { Props } from './types.bicep'
 import { DefaultProps } from './constants.bicep'
 
 targetScope = 'resourceGroup'
@@ -17,9 +17,11 @@ resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2025-02
   properties: union(DefaultProps, props ?? {})
 }
 
-@sys.secure()
-output core Outputs = {
-  id: logAnalyticsWorkspace.id
-  customerId: logAnalyticsWorkspace.properties.customerId
-  key: logAnalyticsWorkspace.listSharedKeys().primarySharedKey
-}
+
+output id string = logAnalyticsWorkspace.id
+
+
+output customerId string = logAnalyticsWorkspace.properties.customerId
+
+@secure()
+output key string = logAnalyticsWorkspace.listSharedKeys().primarySharedKey

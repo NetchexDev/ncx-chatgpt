@@ -3,7 +3,7 @@ targetScope = 'subscription'
 
 param location string = deployment().location
 
-@sys.secure()
+@secure()
 param nextAuthHash string = uniqueString(newGuid())
 
 // TODO: name generator
@@ -35,7 +35,7 @@ module applicationInsights 'modules/monitoring/application-insights/main.bicep' 
       location: location
     }
     props: {
-      workspaceId: logAnalyticsWorkspace.outputs.core.id
+      workspaceId: logAnalyticsWorkspace.outputs.id
     }
   }
 }
@@ -130,7 +130,7 @@ module speechService 'modules/ai-services/cognitive-service/main.bicep' = {
 }
 
 // OpenAI Model Deployments
-module openai 'modules/ai-services/cognitive-service/main.bicep' = {
+module openAiService 'modules/ai-services/cognitive-service/main.bicep' = {
   name: 'openaiService'
   scope: resourceGroup
   params: {
@@ -184,6 +184,8 @@ module openai 'modules/ai-services/cognitive-service/main.bicep' = {
 //// Grounding with Bing
 // HACK 2025-06-03 Not supported by ARM deployments, at this time
 
+// Microsoft Entra ID Application Registration
+
 // Key Vault
 module keyVault 'modules/data-storage/key-vault/main.bicep' = {
   name: 'keyVault'
@@ -197,11 +199,11 @@ module keyVault 'modules/data-storage/key-vault/main.bicep' = {
       secrets: [
         {
           name: 'AZURE-OPENAI-API-KEY'
-          value: openai.outputs.core.keys[0]
+          value: openAiService.outputs.key
         }
         {
           name: 'AZURE-OPENAI-DALLE-API-KEY'
-          value: openai.outputs.core.keys[0]
+          value: openAiService.outputs.key
         }
         {
           name: 'NEXTAUTH-SECRET'
@@ -209,23 +211,23 @@ module keyVault 'modules/data-storage/key-vault/main.bicep' = {
         }
         {
           name: 'AZURE-COSMOSDB-KEY'
-          value: cosmosDb.outputs.core.keys[0]
+          value: cosmosDb.outputs.key
         }
         {
           name: 'AZURE-DOCUMENT-INTELLIGENCE-KEY'
-          value: formRecognizer.outputs.core.keys[0]
+          value: formRecognizer.outputs.key
         }
         {
           name: 'AZURE-SPEECH-KEY'
-          value: speechService.outputs.core.keys[0]
+          value: speechService.outputs.key
         }
         {
           name: 'AZURE-SEARCH-API-KEY'
-          value: searchService.outputs.core.keys[0]
+          value: searchService.outputs.key
         }
         {
           name: 'AZURE-STORAGE-ACCOUNT-KEY'
-          value: storageAccount.outputs.core.keys[0]
+          value: storageAccount.outputs.key
         }
       ]
     }
@@ -258,17 +260,18 @@ module containerAppEnvironment 'modules/application/container-app-environment/ma
     }
     props: {
       logAnalyticsConfiguration: {
-        customerId: logAnalyticsWorkspace.outputs.core.id
-        key: logAnalyticsWorkspace.outputs.core.key
+        customerId: logAnalyticsWorkspace.outputs.id
+        key: logAnalyticsWorkspace.outputs.key
       }
     }
   }
 }
 
 // Container App
+// ? Should this be deferred until after the first image deployed to the registry?
 
 // Public DNS Zone CNAME Record
 
-// Role Assignments
+// Azure Role Assignments
 // Cosmos DB SQL Database Role Definition
 // Cosmos DB SQL Database Role Assignment

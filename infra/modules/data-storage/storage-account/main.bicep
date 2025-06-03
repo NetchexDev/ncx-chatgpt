@@ -1,5 +1,5 @@
 import { CoreConfiguration } from '../../types.bicep'
-import { Props, Outputs, Sku } from './types.bicep'
+import { Props, Sku } from './types.bicep'
 import { DefaultProps } from './constants.bicep'
 
 targetScope = 'resourceGroup'
@@ -46,15 +46,18 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2024-01-01' = {
   }
 }
 
-@sys.secure()
-output core Outputs = {
-  id: storageAccount.id
-  blobEndpoint: storageAccount.properties.primaryEndpoints.blob
-  keys: [
-    storageAccount.listKeys().keys[0].value
-    storageAccount.listKeys().keys[1].value
-  ]
-}
 
-@sys.description('The Storage Account resource.')
-output res resource = storageAccount
+output id string = storageAccount.id
+
+output blobEndpoint string = storageAccount.properties.primaryEndpoints.blob
+
+@secure()
+output key string = storageAccount.listKeys().keys[0].value
+
+@secure()
+output connectionString string = join([
+  'DefaultEndpointsProtocol=https'
+  'AccountName=${storageAccount.name}'
+  'AccountKey=${storageAccount.listKeys().keys[0].value}'
+  'EndpointSuffix=${az.environment().suffixes.storage}'
+], ';')

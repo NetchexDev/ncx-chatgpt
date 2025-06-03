@@ -1,5 +1,5 @@
 import { CoreConfiguration } from '../../types.bicep'
-import { Sku, Props, Outputs } from './types.bicep'
+import { Sku, Props } from './types.bicep'
 import { DefaultProps } from './constants.bicep'
 
 targetScope = 'resourceGroup'
@@ -39,15 +39,11 @@ resource llm 'Microsoft.CognitiveServices/accounts/deployments@2025-04-01-previe
   }
 ]
 
-@sys.secure()
-output core Outputs = {
-  id: cognitiveService.id
-  keys: [
-    cognitiveService.listKeys().key1
-    cognitiveService.listKeys().key2
-  ]
-  endpoint: cognitiveService.properties.endpoint
-}
 
-@sys.description('The Cognitive Service resource.')
-output res resource = cognitiveService
+output id string = cognitiveService.id
+
+@secure()
+output key string = cognitiveService.listKeys().key1
+
+
+output endpoint string = cognitiveService.properties.endpoint

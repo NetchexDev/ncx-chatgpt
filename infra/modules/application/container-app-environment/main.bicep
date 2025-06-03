@@ -13,7 +13,6 @@ resource containerAppEnvironment 'Microsoft.App/managedEnvironments@2025-01-01' 
   name: core.name
   location: core.location
   tags: core.?tags
-  identity: { type: 'SystemAssigned' }
 
   properties: union(
     {
@@ -29,13 +28,9 @@ resource containerAppEnvironment 'Microsoft.App/managedEnvironments@2025-01-01' 
   )
 }
 
-@sys.secure()
 output core Outputs = {
   id: containerAppEnvironment.id
   name: containerAppEnvironment.name
   defaultDomain: containerAppEnvironment.properties.defaultDomain
   staticIp: containerAppEnvironment.properties.staticIp
 }
-
-@sys.description('The Container App Environment resource.')
-output res resource = containerAppEnvironment

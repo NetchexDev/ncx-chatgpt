@@ -76,8 +76,9 @@ type Outputs = {
   @sys.description('The resource ID of the Cognitive service.')
   id: resourceOutput<'Microsoft.CognitiveServices/accounts@2025-04-01-preview'>.id
 
+  @secure()
   @sys.description('The name of the Cognitive service.')
-  keys: string[]
+  key: string
 
   @sys.description('The endpoint of the Cognitive service.')
   endpoint: resourceOutput<'Microsoft.CognitiveServices/accounts@2025-04-01-preview'>.properties.endpoint

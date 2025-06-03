@@ -19,7 +19,6 @@ resource applicationInsights 'Microsoft.Insights/components@2020-02-02' = {
   properties: union(DefaultProps, props)
 }
 
-@sys.secure()
 output core Outputs = {
   id: applicationInsights.id
   instrumentationKey: applicationInsights.properties.InstrumentationKey

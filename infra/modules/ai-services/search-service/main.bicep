@@ -1,5 +1,5 @@
 import { CoreConfiguration } from '../../types.bicep'
-import { Sku, Props, Outputs } from './types.bicep'
+import { Sku, Props } from './types.bicep'
 import { DefaultConfiguration } from './constants.bicep'
 
 targetScope = 'resourceGroup'
@@ -23,15 +23,10 @@ resource searchService 'Microsoft.Search/searchServices@2025-05-01' = {
   properties: union(DefaultConfiguration, props)
 }
 
-@sys.secure()
-output core Outputs = {
-  id: searchService.id
-  keys: [
-    searchService.listKeys().key1
-    searchService.listKeys().key2
-  ]
-  endpoint: searchService.properties.endpoint
-}
 
-@sys.description('The Search service resource.')
-output res resource = searchService
+output id string = searchService.id
+
+@secure()
+output key string = searchService.listKeys().key1
+
+output endpoint string = searchService.properties.endpoint
