@@ -14,7 +14,7 @@
     // "symbolicNameCodegen": true,
     // "testFramework": true,
     // "waitAndRetry": true,
-    // "moduleExtensionConfigs": true
+    // "moduleExtensionConfigs": true,
   },
   "analyzers": {
     "core": {

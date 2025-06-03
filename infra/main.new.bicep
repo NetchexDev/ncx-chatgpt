@@ -1,7 +1,10 @@
 
+
 targetScope = 'subscription'
 
+param prefix string = 'ncxat'
 param location string = deployment().location
+param locShrt string = 'eus2'
 
 @secure()
 param nextAuthHash string = uniqueString(newGuid())
@@ -9,29 +12,31 @@ param nextAuthHash string = uniqueString(newGuid())
 // TODO: name generator
 
 resource resourceGroup 'Microsoft.Resources/resourceGroups@2025-03-01' = {
-  name: 'some-demo-resource-group'
+  name: 'rg-${prefix}-${locShrt}'
   location: location
 }
 
 // Log Analytics Workspace
 module logAnalyticsWorkspace 'modules/monitoring/log-analytics-workspace/main.bicep' = {
-  name: 'logAnalyticsWorkspace'
   scope: resourceGroup
   params: {
     core: {
-      name: 'some-demo-log-analytics-workspace'
+      name: 'law-${prefix}-${locShrt}'
       location: location
+    }
+    props: {
+      sku: 'PerGB2018'
+      retention: 60
     }
   }
 }
 
 // Application Insights
 module applicationInsights 'modules/monitoring/application-insights/main.bicep' = {
-  name: 'applicationInsights'
   scope: resourceGroup
   params: {
     core: {
-      name: 'some-demo-application-insights'
+      name: 'appinsights-${prefix}-${locShrt}'
       location: location
     }
     props: {
@@ -44,24 +49,17 @@ module applicationInsights 'modules/monitoring/application-insights/main.bicep' 
 // Cosmos DB SQL Database
 // Cosmos DB SQL Database Containers
 module cosmosDb 'modules/data-storage/cosmos-db/main.bicep' = {
-  name: 'cosmosDb'
   scope: resourceGroup
   params: {
     core: {
-      name: 'mycosmosdb'
+      name: 'cosmosdb-${prefix}-${locShrt}'
       location: location
     }
     props: {
-      databaseName: 'myDatabase'
+      databaseName: 'chat'
       containers: [
-        {
-          name: 'historyContainer'
-          partitionKeyPaths: ['/userId']
-        }
-        {
-          name: 'configContainer'
-          partitionKeyPaths: ['/userId']
-        }
+        { name: 'history', partitionKeyPaths: ['/userId'] }
+        { name: 'config', partitionKeyPaths: ['/userId'] }
       ]
     }
   }
@@ -71,29 +69,27 @@ module cosmosDb 'modules/data-storage/cosmos-db/main.bicep' = {
 // Storage Account Blob Service
 // Storage Account Blob Container(s)
 module storageAccount 'modules/data-storage/storage-account/main.bicep' = {
-  name: 'storageAccount'
   scope: resourceGroup
   params: {
     core: {
-      name: 'some-demo-sa' // ! Yes, this is a bad name, but it's just a demo
+      name: 'sa${replace(prefix, '-', '')}${locShrt}'
       location: location
     }
-    sku: {
-      name: 'Standard_LRS'
-    }
     props: {
-      containers: [ { name: 'images' }, { name: 'documents' } ]
+      containers: [
+        { name: 'images' }
+        { name: 'documents' }
+      ]
     }
   }
 }
 
 // Search Service
 module searchService 'modules/ai-services/search-service/main.bicep' = {
-  name: 'searchService'
   scope: resourceGroup
   params: {
     core: {
-      name: 'some-demo-search-service'
+      name: 'search-${prefix}-${locShrt}'
       location: location
     }
   }
@@ -101,11 +97,10 @@ module searchService 'modules/ai-services/search-service/main.bicep' = {
 
 // Form Recognizer
 module formRecognizer 'modules/ai-services/cognitive-service/main.bicep' = {
-  name: 'formRecognizer'
   scope: resourceGroup
   params: {
     core: {
-      name: 'some-demo-form-recognizer'
+      name: 'docint-${prefix}-${locShrt}'
       location: location
     }
     props: {
@@ -116,11 +111,10 @@ module formRecognizer 'modules/ai-services/cognitive-service/main.bicep' = {
 
 // Speech Service
 module speechService 'modules/ai-services/cognitive-service/main.bicep' = {
-  name: 'speechService'
   scope: resourceGroup
   params: {
     core: {
-      name: 'some-demo-speech-service'
+      name: 'speech-${prefix}-${locShrt}'
       location: location
     }
     props: {
@@ -131,11 +125,10 @@ module speechService 'modules/ai-services/cognitive-service/main.bicep' = {
 
 // OpenAI Model Deployments
 module openAiService 'modules/ai-services/cognitive-service/main.bicep' = {
-  name: 'openaiService'
   scope: resourceGroup
   params: {
     core: {
-      name: 'some-demo-openai-service'
+      name: 'openai-${prefix}-${locShrt}'
       location: location
     }
     props: {
@@ -188,11 +181,10 @@ module openAiService 'modules/ai-services/cognitive-service/main.bicep' = {
 
 // Key Vault
 module keyVault 'modules/data-storage/key-vault/main.bicep' = {
-  name: 'keyVault'
   scope: resourceGroup
   params: {
     core: {
-      name: 'some-demo-key-vault'
+      name: 'kv-${prefix}-${locShrt}'
       location: location
     }
     props: {
@@ -236,26 +228,24 @@ module keyVault 'modules/data-storage/key-vault/main.bicep' = {
 
 // Container Registry
 module containerRegistry 'modules/application/container-registry/main.bicep' = {
-  name: 'containerRegistry'
   scope: resourceGroup
   params: {
     core: {
-      name: 'some-demo-container-registry'
+      name: 'cr${replace(prefix, '-', '')}'
       location: location
     }
     sku: {
-      name: 'Premium'
+      name: 'Standard'
     }
   }
 }
 
 // Container App Environment
 module containerAppEnvironment 'modules/application/container-app-environment/main.bicep' = {
-  name: 'containerAppEnvironment'
   scope: resourceGroup
   params: {
     core: {
-      name: 'some-demo-container-app-env'
+      name: 'cae-${prefix}-${locShrt}'
       location: location
     }
     props: {
