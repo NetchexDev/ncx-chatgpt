@@ -1,0 +1,191 @@
+// This is a Bicep configuration file. It can be used to control how Bicep operates and to customize
+// validation settings for the Bicep linter. The linter uses these settings when evaluating your Bicep
+// files for best practices. For further information, please refer to the official documentation at:
+// https://learn.microsoft.com/en-us/azure/azure-resource-manager/bicep/bicep-config
+{
+  "experimentalFeaturesEnabled": {
+    "assertions": true,
+    "extendableParamFiles": true,
+    "extensibility": true,
+    "onlyIfNotExists": true,
+    "resourceDerivedTypes": true,
+    "resourceInfoCodegen": true,
+    "resourceTypedParamsAndOutputs": true,
+    "sourceMapping": true,
+    "symbolicNameCodegen": true,
+    "testFramework": true,
+    "typedVariables": true,
+    "waitAndRetry": true
+  },
+  "analyzers": {
+    "core": {
+      "enabled": true,
+      "verbose": false,
+      "rules": {
+        "adminusername-should-not-be-literal": {
+          "level": "error"
+        },
+        "artifacts-parameters": {
+          "level": "warning"
+        },
+        "decompiler-cleanup": {
+          "level": "warning"
+        },
+        "explicit-values-for-loc-params": {
+          "level": "warning"
+        },
+        "max-asserts": {
+          "level": "error"
+        },
+        "max-outputs": {
+          "level": "error"
+        },
+        "max-params": {
+          "level": "error"
+        },
+        "max-resources": {
+          "level": "error"
+        },
+        "max-variables": {
+          "level": "error"
+        },
+        "nested-deployment-template-scoping": {
+          "level": "error"
+        },
+        "no-conflicting-metadata": {
+          "level": "warning"
+        },
+        "no-deployments-resources": {
+          "level": "error"
+        },
+        "no-hardcoded-env-urls": {
+          "disallowedhosts": [
+            "api.loganalytics.io",
+            "api.loganalytics.iov1",
+            "asazure.windows.net",
+            "azuredatalakeanalytics.net",
+            "azuredatalakestore.net",
+            "batch.core.windows.net",
+            "core.windows.net",
+            "database.windows.net",
+            "datalake.azure.net",
+            "gallery.azure.com",
+            "graph.windows.net",
+            "login.microsoftonline.com",
+            "management.azure.com",
+            "management.core.windows.net",
+            "region.asazure.windows.net",
+            "trafficmanager.net",
+            "vault.azure.net"
+          ],
+          "excludedhosts": [
+            "schema.management.azure.com"
+          ],
+          "level": "warning"
+        },
+        "no-hardcoded-location": {
+          "level": "warning"
+        },
+        "no-loc-expr-outside-params": {
+          "level": "warning"
+        },
+        "no-unnecessary-dependson": {
+          "level": "warning"
+        },
+        "no-unused-existing-resources": {
+          "level": "warning"
+        },
+        "no-unused-params": {
+          "level": "warning"
+        },
+        "no-unused-vars": {
+          "level": "warning"
+        },
+        "outputs-should-not-contain-secrets": {
+          "level": "warning"
+        },
+        "prefer-interpolation": {
+          "level": "warning"
+        },
+        "prefer-unquoted-property-names": {
+          "level": "warning"
+        },
+        "protect-commandtoexecute-secrets": {
+          "level": "warning"
+        },
+        "secure-parameter-default": {
+          "level": "error"
+        },
+        "secure-params-in-nested-deploy": {
+          "level": "warning"
+        },
+        "secure-secrets-in-params": {
+          "level": "warning"
+        },
+        "simplify-interpolation": {
+          "level": "warning"
+        },
+        "simplify-json-null": {
+          "level": "warning"
+        },
+        "use-parent-property": {
+          "level": "warning"
+        },
+        "use-recent-api-versions": {
+          "level": "warning",
+          "maxAllowedAgeInDays": 730
+        },
+        "use-recent-module-versions": {
+          "level": "warning",
+          "maxAllowedAgeInDays": 730
+        },
+        "use-resource-id-functions": {
+          "level": "warning"
+        },
+        "use-resource-symbol-reference": {
+          "level": "warning"
+        },
+        "use-safe-access": {
+          "level": "warning"
+        },
+        "use-secure-value-for-secure-inputs": {
+          "level": "error"
+        },
+        "use-stable-resource-identifiers": {
+          "level": "warning"
+        },
+        "use-stable-vm-image": {
+          "level": "warning"
+        },
+        "use-user-defined-types": {
+          "level": "warning"
+        },
+        "what-if-short-circuiting": {
+          "level": "warning"
+        }
+      }
+    }
+  },
+  "moduleAliases": {
+    "br": {
+      "NcxAVM": {
+        "registry": "ncxavm.azurecr.io"
+      }
+    }
+  },
+  "formatting": {
+    "indentKind": "Space",
+    "indentSize": 2,
+    "insertFinalNewline": true,
+    "newlineKind": "LF"
+  },
+  "cloud": {
+    "currentProfile": "AzureCloud",
+    "profiles": {
+      "AzureCloud": {
+        "resourceManagerEndpoint": "https://management.azure.com",
+        "activeDirectoryAuthority": "https://login.microsoftonline.com"
+      }
+    }
+  }
+}

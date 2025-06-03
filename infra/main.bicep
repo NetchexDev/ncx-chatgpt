@@ -101,7 +101,7 @@ resource rg 'Microsoft.Resources/resourceGroups@2021-04-01' = {
   tags: tags
 }
 
-module resources 'resources.bicep' = {
+module resources 'modules/resources.bicep' = {
   name: 'all-resources'
   scope: rg
   params: {

@@ -123,7 +123,7 @@ resource subnet_appServiceBackend 'Microsoft.Network/virtualNetworks/subnets@202
   }
 }
 
-module privateEndpoints 'private_endpoints_services.bicep' = [
+module privateEndpoints './private_endpoints_services.bicep' = [
   for (privateEndpointSpec, i) in privateEndpointSpecs: {
     name: 'private-endpoint-${i}'
     params: {

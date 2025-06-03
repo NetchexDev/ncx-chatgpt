@@ -97,7 +97,7 @@ var llmDeployments = [
   }
 ]
 
-module privateEndpoints 'private_endpoints_core.bicep' = if (usePrivateEndpoints) {
+module privateEndpoints './private_endpoints_core.bicep' = if (usePrivateEndpoints) {
   name: 'private-endpoints'
   params: {
     location: location
@@ -479,7 +479,7 @@ resource searchService 'Microsoft.Search/searchServices@2022-09-01' = {
   }
 }
 
-resource azureopenai 'Microsoft.CognitiveServices/accounts@2023-05-01' = {
+resource azureopenai 'Microsoft.CognitiveServices/accounts@2025-04-01-preview' = {
   name: openai_name
   location: openAiLocation
   tags: tags
