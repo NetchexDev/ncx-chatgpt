@@ -4,17 +4,19 @@
 // https://learn.microsoft.com/en-us/azure/azure-resource-manager/bicep/bicep-config
 {
   "experimentalFeaturesEnabled": {
-    // "assertions": true,
-    // "extendableParamFiles": true,
-    // "onlyIfNotExists": true,
-    // "resourceDerivedTypes": true,
-    // "resourceInfoCodegen": true,
-    // "resourceTypedParamsAndOutputs": true //,
-    // "sourceMapping": true,
-    // "symbolicNameCodegen": true,
-    // "testFramework": true,
-    // "waitAndRetry": true,
-    // "moduleExtensionConfigs": true,
+    "assertions": true,
+    "extendableParamFiles": true,
+    "onlyIfNotExists": true,
+    "resourceDerivedTypes": true,
+    "resourceInfoCodegen": true,
+    "resourceTypedParamsAndOutputs": true,
+    "sourceMapping": true,
+    "symbolicNameCodegen": true,
+    "testFramework": true,
+    "waitAndRetry": true,
+    "moduleExtensionConfigs": true,
+    "legacyFormatter": false,
+    "secureOutputs": false
   },
   "analyzers": {
     "core": {

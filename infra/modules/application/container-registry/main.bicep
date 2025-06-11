@@ -1,5 +1,5 @@
 import { CoreConfiguration } from '../../types.bicep'
-import { Sku, Props, Outputs } from './types.bicep'
+import { Sku, Props } from './types.bicep'
 import { DefaultConfiguration, acrPullRoleDefinitionId as AcrPull } from './constants.bicep'
 
 targetScope = 'resourceGroup'
@@ -39,8 +39,6 @@ resource acrPullRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-
   }
 }
 
-output core Outputs = {
-  id: containerRegistry.id
-  loginServer: containerRegistry.properties.loginServer
-  identity: containerRegistry.identity.principalId
-}
+output id string = containerRegistry.id
+output loginServer string = containerRegistry.properties.loginServer
+output acrPullIdentityId string = acrPullManagedIdentity.id

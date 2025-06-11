@@ -21,7 +21,7 @@ resource cognitiveService 'Microsoft.CognitiveServices/accounts@2025-04-01-previ
   kind: props.kind
   sku: sku
 
-  properties: union(DefaultProps, { customSubDomainName: core.name }, props.?properties ?? {})
+  properties: union(DefaultProps, props.?properties ?? {})
 }
 
 @sys.batchSize(1)

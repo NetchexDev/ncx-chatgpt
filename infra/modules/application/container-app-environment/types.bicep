@@ -1,14 +1,7 @@
 @export()
 @sys.description('Properties for the Container App Environment.')
 type Props = {
-  @sys.description('Log Analytics configuration for the Container App Environment.')
-  logAnalyticsConfiguration: {
-    @sys.description('The Log Analytics workspace customer ID.')
-    customerId: string
-
-    @sys.description('The Log Analytics workspace shared key.')
-    key: string
-  }
+  analyticsWorkspaceId: resourceInput<'Microsoft.OperationalInsights/workspaces@2025-02-01'>.id
 }
 
 @export()

@@ -2,8 +2,8 @@ import { Props } from './types.bicep'
 
 @sys.export()
 var DefaultProps Props = {
-  sku: 'PerGB2018'
-  retention: 30
+  sku: { name: 'PerGB2018' }
+  retention: 60
   publicNetworkIngestion: 'Enabled'
   publicNetworkQuery: 'Enabled'
 }

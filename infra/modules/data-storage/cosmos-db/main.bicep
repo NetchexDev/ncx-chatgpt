@@ -44,7 +44,7 @@ resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2025-05-01-previ
             id: container.name
             partitionKey: {
               paths: container.partitionKeyPaths
-              kind: container.partitionKeyKind ?? 'Hash'
+              kind: container.?partitionKeyKind ?? 'Hash'
             }
           }
         }

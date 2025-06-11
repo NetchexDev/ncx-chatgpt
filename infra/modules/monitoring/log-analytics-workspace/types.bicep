@@ -1,8 +1,7 @@
-
 @sys.export()
 type Props = {
   @sys.description('The SKU for the Log Analytics Workspace. Defaults to `PerGB2018`.')
-  sku: string
+  sku: resourceInput<'Microsoft.OperationalInsights/workspaces@2025-02-01'>.properties.sku?
 
   @sys.description('The retention period for the Log Analytics Workspace in days. Defaults to `30`.')
   retention: int
@@ -25,4 +24,3 @@ type Outputs = {
   @sys.description('The primary shared key for the Log Analytics Workspace.')
   key: string
 }
-

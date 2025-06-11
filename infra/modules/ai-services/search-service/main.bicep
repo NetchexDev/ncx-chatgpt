@@ -7,13 +7,14 @@ targetScope = 'resourceGroup'
 @sys.description('The core configuration for the Search service.')
 param core CoreConfiguration
 
-@sys.description('The SKU for the Search service. Defaults to `Standard`.')
-param sku Sku = { name: 'Standard' }
+@sys.description('The SKU for the Search service. Defaults to `standard`.')
+param sku Sku = { name: 'standard' }
 
 @sys.description('Configuration for the Search service resource. See `DefaultConfiguration` for defaults.')
 param props Props = {}
 
-resource searchService 'Microsoft.Search/searchServices@2025-05-01' = {
+#disable-next-line use-recent-api-versions // ! 2025-05-01 is not available in all regions yet
+resource searchService 'Microsoft.Search/searchServices@2025-02-01-Preview' = {
   name: core.name
   location: core.location
   tags: core.?tags
@@ -27,6 +28,6 @@ resource searchService 'Microsoft.Search/searchServices@2025-05-01' = {
 output id string = searchService.id
 
 @secure()
-output key string = searchService.listKeys().key1
+output key string = searchService.listAdminKeys().primaryKey
 
 output endpoint string = searchService.properties.endpoint

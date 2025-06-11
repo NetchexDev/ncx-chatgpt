@@ -9,6 +9,13 @@ param core CoreConfiguration
 @sys.description('Configuration for the Container App Environment resource. See `DefaultConfiguration` for defaults.')
 param props Props
 
+var lawParts string[] = split(props.analyticsWorkspaceId, '/')
+
+resource analyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2025-02-01' existing = {
+  scope: resourceGroup(lawParts[4]) /* analyticsWorkspaceRGName */
+  name: lawParts[8] /* analyticsWorkspaceName */
+}
+
 resource containerAppEnvironment 'Microsoft.App/managedEnvironments@2025-01-01' = {
   name: core.name
   location: core.location
@@ -19,8 +26,8 @@ resource containerAppEnvironment 'Microsoft.App/managedEnvironments@2025-01-01' 
       appLogsConfiguration: {
         destination: 'log-analytics'
         logAnalyticsConfiguration: {
-          customerId: props.logAnalyticsConfiguration.customerId
-          sharedKey: props.logAnalyticsConfiguration.key
+          customerId: analyticsWorkspace.properties.customerId
+          sharedKey: analyticsWorkspace.listKeys().primarySharedKey
         }
       }
     },
