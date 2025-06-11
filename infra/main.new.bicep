@@ -1,7 +1,7 @@
 targetScope = 'resourceGroup'
 
 @minLength(3)
-param prefix string = 'ncxat'
+param prefix string = 'ncxchat'
 
 @export()
 var abbreviations { *: string } = {
@@ -18,10 +18,10 @@ var abbreviations { *: string } = {
 func abbreviate(key string) string => abbreviations[?key] ?? toLower(replace(key, ' ', ''))
 
 param primaryLocation string = resourceGroup().location
-param secondaryLocation string = 'eastus2'
+param secondaryLocation string = 'eastus'
 
-@minLength(2)
-param locShrt string = 'eus2'
+var locShrt string = abbreviate(primaryLocation)
+var locShrt2 string = abbreviate(secondaryLocation)
 
 param nextAuthHash string = uniqueString(newGuid())
 
@@ -176,6 +176,7 @@ resource configContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/con
 
 // Storage Account
 resource storageAccount 'Microsoft.Storage/storageAccounts@2024-01-01' = {
+  #disable-next-line BCP334
   name: 'sa${replace(prefix, '-', '')}${locShrt}'
   location: primaryLocation
   kind: 'StorageV2'
@@ -387,6 +388,15 @@ resource formRecognizerDiagnosticSettings 'Microsoft.Insights/diagnosticSettings
   }
 }
 
+// Grounding with Bing Search Service
+#disable-next-line BCP081 // Types are not yet available for this resource
+resource groundingWithBingSearch 'Microsoft.Bing/accounts@2020-06-10' = {
+  name: 'bing-${prefix}'
+  location: 'global'
+  kind: 'Bing.Grounding'
+  sku: { name: 'G1' }
+}
+
 // Speech Service
 resource speechService 'Microsoft.CognitiveServices/accounts@2025-04-01-preview' = {
   name: 'speech-${prefix}-${locShrt}'
@@ -449,14 +459,14 @@ module openAiService 'modules/ai-services/cognitive-service/main.bicep' = {
       kind: 'OpenAI'
       modelDeployment: [
         {
-          name: 'gpt-4.1-mini'
+          name: 'gpt-4.1'
           sku: {
             name: 'GlobalStandard'
-            capacity: 500
+            capacity: 250
           }
           model: {
             format: 'OpenAI'
-            name: 'gpt-4.1-mini'
+            name: 'gpt-4.1'
             version: '2025-04-14'
           }
         }
@@ -464,7 +474,7 @@ module openAiService 'modules/ai-services/cognitive-service/main.bicep' = {
           name: 'text-embedding-ada-002'
           sku: {
             name: 'Standard'
-            capacity: 60
+            capacity: 150
           }
           model: {
             format: 'OpenAI'
@@ -472,6 +482,21 @@ module openAiService 'modules/ai-services/cognitive-service/main.bicep' = {
             version: '2'
           }
         }
+      ]
+    }
+  }
+}
+
+// OpenAI Model Deployments
+module openAiService_dalle 'modules/ai-services/cognitive-service/main.bicep' = {
+  params: {
+    core: {
+      name: 'openai-${prefix}-${locShrt2}'
+      location: secondaryLocation
+    }
+    props: {
+      kind: 'OpenAI'
+      modelDeployment: [
         {
           name: 'dall-e-3'
           sku: {
@@ -481,115 +506,11 @@ module openAiService 'modules/ai-services/cognitive-service/main.bicep' = {
           model: {
             format: 'OpenAI'
             name: 'dall-e-3'
+            version: '3'
           }
         }
       ]
     }
-  }
-}
-
-// OpenAI Service
-resource openAiService_OLD 'Microsoft.CognitiveServices/accounts@2025-04-01-preview' = {
-  name: 'openai-${prefix}-${locShrt}'
-  location: primaryLocation
-  kind: 'OpenAI'
-  sku: {
-    name: 'S0'
-  }
-  properties: {
-    publicNetworkAccess: 'Enabled'
-    customSubDomainName: 'openai-${prefix}-${locShrt}'
-  }
-}
-
-// Add OpenAI model deployments
-var llmDeployments = [
-  {
-    name: 'gpt-4.1-mini'
-    model: {
-      format: 'OpenAI'
-      name: 'gpt-4.1-mini'
-      version: '2025-04-14'
-    }
-    sku: {
-      name: 'GlobalStandard'
-      capacity: 500
-    }
-  }
-  {
-    name: 'text-embedding-ada-002'
-    model: {
-      format: 'OpenAI'
-      name: 'text-embedding-ada-002'
-      version: '2'
-    }
-    sku: {
-      name: 'Standard'
-      capacity: 120
-    }
-  }
-  {
-    name: 'dalle-e-3'
-    model: {
-      format: 'OpenAI'
-      name: 'dall-e-3'
-    }
-    sku: {
-      name: 'Standard'
-      capacity: 1
-    }
-  }
-]
-
-@batchSize(1)
-resource llmDeployment 'Microsoft.CognitiveServices/accounts/deployments@2025-04-01-preview' = [
-  for deployment in llmDeployments: {
-    parent: openAiService
-    name: deployment.name
-    properties: {
-      model: deployment.model
-      // raiPolicyName: 'Microsoft.Default'
-      versionUpgradeOption: 'OnceNewDefaultVersionAvailable'
-    }
-    sku: deployment.sku
-  }
-]
-
-// Diagnostic Settings for OpenAI Service
-resource openAiServiceDiagnosticSettings 'Microsoft.Insights/diagnosticSettings@2016-09-01' = {
-  name: 'service'
-  location: primaryLocation
-  scope: openAiService
-  properties: {
-    workspaceId: logAnalyticsWorkspace.id
-    logs: [
-      {
-        category: 'Audit'
-        enabled: true
-        retentionPolicy: {
-          days: 30
-          enabled: true
-        }
-      }
-      {
-        category: 'RequestResponse'
-        enabled: true
-        retentionPolicy: {
-          days: 30
-          enabled: true
-        }
-      }
-    ]
-    metrics: [
-      {
-        timeGrain: 'PT1M'
-        enabled: true
-        retentionPolicy: {
-          days: 30
-          enabled: true
-        }
-      }
-    ]
   }
 }
 
@@ -608,6 +529,7 @@ resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
     enabledForTemplateDeployment: true
     enableSoftDelete: true
     softDeleteRetentionInDays: 90
+    enableRbacAuthorization: true
   }
 }
 
@@ -654,7 +576,7 @@ resource openAiKeySecret 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = {
   parent: keyVault
   name: 'AZURE-OPENAI-API-KEY'
   properties: {
-    value: openAiService.listKeys().key1
+    value: openAiService.outputs.key
   }
 }
 
@@ -662,7 +584,7 @@ resource openAiDalleKeySecret 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = {
   parent: keyVault
   name: 'AZURE-OPENAI-DALLE-API-KEY'
   properties: {
-    value: openAiService.listKeys().key1
+    value: openAiService_dalle.outputs.key
   }
 }
 
@@ -765,6 +687,15 @@ resource containerRegistryDiagnosticSettings 'Microsoft.Insights/diagnosticSetti
   }
 }
 
+// TODO Add managed identity for the container registry
+
+resource acrPullIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2025-01-31-preview' = {
+  name: 'ncx-chat-registry-pull'
+  location: primaryLocation
+}
+
+// TODO Add default image for ncx-chat:latest so the infra can be deployed without needing to build the image first
+
 // Container App Environment
 resource containerAppEnvironment 'Microsoft.App/managedEnvironments@2025-02-02-preview' = {
   name: 'cae-${prefix}-${locShrt}'
@@ -780,52 +711,40 @@ resource containerAppEnvironment 'Microsoft.App/managedEnvironments@2025-02-02-p
   }
 }
 
+resource acrPullIdentityRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(containerRegistry.id, acrPullIdentity.id, 'AcrPullRole')
+  scope: containerRegistry
+  properties: {
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '7f951dda-4ed3-4680-a7ca-43fe172d538d') // AcrPull
+    principalId: acrPullIdentity.properties.principalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
 // Container App
 resource containerApp 'Microsoft.App/containerApps@2025-02-02-preview' = {
   name: 'ca-${prefix}-${locShrt}'
   location: primaryLocation
-  tags: {
-    'azd-service-name': 'frontend'
-  }
+  dependsOn: [
+    acrPullIdentityRoleAssignment
+  ]
   identity: {
-    type: 'SystemAssigned'
+    type: 'SystemAssigned,UserAssigned'
+    userAssignedIdentities: {
+      '${acrPullIdentity.id}': {}
+    }
   }
   properties: {
     managedEnvironmentId: containerAppEnvironment.id
     configuration: {
-      activeRevisionsMode: 'Single'
       ingress: {
         external: true
         targetPort: 3000
-        allowInsecure: false
-        traffic: [
-          {
-            latestRevision: true
-            weight: 100
-          }
-        ]
-        transport: 'Auto'
-        corsPolicy: {
-          allowedOrigins: [
-            '*'
-          ]
-          allowedMethods: [
-            'GET'
-            'POST'
-            'PUT'
-            'DELETE'
-            'OPTIONS'
-          ]
-          allowedHeaders: [
-            '*'
-          ]
-          maxAge: 3600
-        }
       }
       registries: [
         {
           server: containerRegistry.properties.loginServer
-          identity: 'system'
+          identity: acrPullIdentity.id
         }
       ]
       secrets: containerAppSecrets
@@ -833,11 +752,11 @@ resource containerApp 'Microsoft.App/containerApps@2025-02-02-preview' = {
     template: {
       containers: [
         {
-          name: 'ncx-chatgpt'
-          image: '${containerRegistry.properties.loginServer}/ncx-chatgpt:latest'
+          name: 'ncx-chat'
+          image: '${containerRegistry.properties.loginServer}/ncx-chat:latest'
           resources: {
-            cpu: json('0.5')
-            memory: '1Gi'
+            cpu: json('1.0')
+            memory: '2.0Gi'
           }
           env: [
             {
@@ -854,7 +773,7 @@ resource containerApp 'Microsoft.App/containerApps@2025-02-02-preview' = {
             }
             {
               name: 'AZURE_OPENAI_API_DEPLOYMENT'
-              value: 'gpt-35-turbo'
+              value: 'gpt-4.1'
             }
             {
               name: 'AZURE_OPENAI_API_EMBEDDINGS_DEPLOYMENT'
@@ -866,7 +785,7 @@ resource containerApp 'Microsoft.App/containerApps@2025-02-02-preview' = {
             }
             {
               name: 'AZURE_OPENAI_API_VERSION'
-              value: '2024-02-15-preview' // Update with your API version
+              value: '2024-12-01-preview'
             }
             {
               name: 'AZURE_OPENAI_DALLE_API_INSTANCE_NAME'
@@ -874,19 +793,20 @@ resource containerApp 'Microsoft.App/containerApps@2025-02-02-preview' = {
             }
             {
               name: 'AZURE_OPENAI_DALLE_API_DEPLOYMENT_NAME'
-              value: 'dalle-3'
+              value: 'dall-e-3'
             }
             {
               name: 'AZURE_OPENAI_DALLE_API_VERSION'
-              value: '2024-02-15-preview' // Update with your API version
+              value: '2024-02-01'
             }
             {
               name: 'NEXTAUTH_SECRET'
               secretRef: 'nextauth-secret'
             }
-            {
+            { // TODO This needs to be set after deployment to get the correct URL?
               name: 'NEXTAUTH_URL'
-              value: 'https://ca-${prefix}-${locShrt}.${primaryLocation}.azurecontainerapps.io'
+              // value: 'https://ca-${prefix}-${locShrt}.${primaryLocation}.azurecontainerapps.io'
+              value: 'https://ca-${prefix}-${locShrt}.${containerAppEnvironment.properties.defaultDomain}'
             }
             {
               name: 'AZURE_COSMOSDB_URI'
@@ -921,7 +841,7 @@ resource containerApp 'Microsoft.App/containerApps@2025-02-02-preview' = {
       ]
       scale: {
         minReplicas: 1
-        maxReplicas: 10
+        maxReplicas: 4
         rules: [
           {
             name: 'http-scale-rule'
@@ -984,8 +904,8 @@ resource cosmosDbRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04
 
 // Cognitive Services Role Assignment
 resource cognitiveServicesRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(openAiService.id, containerApp.id, cognitiveServicesUserRoleId)
-  scope: openAiService
+  name: guid(openAiService.name, containerApp.id, cognitiveServicesUserRoleId)
+  scope: resourceGroup()
   properties: {
     roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', cognitiveServicesUserRoleId)
     principalId: containerApp.identity.principalId
@@ -1039,7 +959,7 @@ resource cosmosDbOperatorRoleAssignment 'Microsoft.Authorization/roleAssignments
 
 // Cognitive Services Contributor Role Assignment
 resource cognitiveServicesContributorRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(openAiService.id, containerApp.id, cognitiveServicesContributorRoleId)
+  name: guid(openAiService.name, containerApp.id, cognitiveServicesContributorRoleId)
   scope: resourceGroup()
   properties: {
     roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', cognitiveServicesContributorRoleId)
@@ -1050,8 +970,8 @@ resource cognitiveServicesContributorRoleAssignment 'Microsoft.Authorization/rol
 
 // OpenAI Contributor Role Assignment
 resource cognitiveServicesOpenAIContributorRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(openAiService.id, containerApp.id, cognitiveServicesOpenAIContributorRoleId)
-  scope: openAiService
+  name: guid(openAiService.name, containerApp.id, cognitiveServicesOpenAIContributorRoleId)
+  scope: resourceGroup()
   properties: {
     roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', cognitiveServicesOpenAIContributorRoleId)
     principalId: containerApp.identity.principalId
@@ -1075,8 +995,6 @@ resource cosmosDbCustomRoleDefinition 'Microsoft.DocumentDB/databaseAccounts/sql
           'Microsoft.DocumentDB/databaseAccounts/readMetadata'
           'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers/*'
           'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers/items/*'
-          'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/read'
-          'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/throughput/read'
         ]
       }
     ]
